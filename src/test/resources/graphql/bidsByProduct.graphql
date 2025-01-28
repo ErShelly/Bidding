@@ -1,0 +1,10 @@
+query {
+    bids(productId: "1") {
+        id
+        auctionId
+        bidAmount
+        userId
+        bidStatus
+        productId
+    }
+}

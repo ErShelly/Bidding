@@ -1,0 +1,132 @@
+schema {
+    query: Query,
+    mutation: Mutation
+}
+
+type Query {
+
+    """
+    List of products available in an auction belonging to categoryIds.
+    If no categoryId is supplied then this query will return products of all categories
+    """
+    products(auctionId: ID!, categoryIds: [ID]): [Product]
+
+    """ Bids made on a product """
+    bids(productId: ID!): [Bid]
+
+    """ List of all categories that are available in the system """
+    categories: [Category]
+
+    """
+    This query will return a list of all auctions that are scheduled to be run or are running in the given time period.
+    This can be used by vendors to get a list of all auctions in their desirable time slot so that they can add their
+    products to one of these auctions
+
+    NOTE: Only those auctions which will start (or already started) on/after the given startTime and will end (not already ended)
+    on/before the given endTime will be returned.
+    """
+    auctionsByTime(startTime: DateTime!, endTime: DateTime!): [Auction]
+}
+
+type Mutation {
+    """
+    This will be used to create an Auction.
+    DO NOTE: This is supposed to be called by Admin user only. In the real world scenario, this will have
+    authentication check to verify the permissions of user calling this. But for this sample demo, this is not
+    enforced.
+    """
+    createAuction(auction: CreateAuctionInput!): Auction
+
+    """ Create a product entry for an auction """
+    createProduct(product: CreateProductInput): Product
+
+    """ Create a bid for a product """
+    createBid(bid: CreateBidInput!): Bid
+
+    """
+    This is used to update an existing bid. This would be used in cases where a user wants to increase the bid
+    amount of a product he has already bid on
+    """
+    updateBid(bid: UpdateBidInput!): Bid
+
+
+
+    """
+    At the end of the auction, this API can be called to generate the winners of each product. This API will also
+    internally send communication to winners.
+    NOTE: Ideally this API would get called automatically at the end of every auction but for demo purpose, I've kept
+    this to be triggered manually. This would also get triggered via Admin user permissions.
+    """
+    concludeAuction(auctionId: ID!): Auction
+}
+
+type Product {
+    id: ID!
+    name: String!
+    basePrice: BigDecimal!
+    description: String
+    imageUrl: String
+    category: Category!
+}
+
+type Auction {
+    id: Int!
+    startTime: DateTime!
+    endTime: DateTime!
+    status: AuctionStatus!
+}
+
+type Bid {
+    id: ID!
+    auctionId: ID!
+    productId: ID!
+    userId: ID!
+    bidAmount: BigDecimal!
+    bidStatus: BidStatus!
+}
+
+type Category {
+    id: ID!
+    name: String!
+}
+
+input UpdateBidInput {
+    id: ID!
+    bidAmount: BigDecimal!
+}
+
+input CreateProductInput {
+    name: String!
+    description: String
+    basePrice: BigDecimal!
+    imageUrl: String
+    vendorId: ID!
+    categoryId: ID!
+}
+
+input CreateAuctionInput {
+    startTime: DateTime!
+    endTime: DateTime!
+}
+
+input CreateBidInput {
+    auctionId: ID!
+    productId: ID!
+    userId: ID!
+    bidAmount: BigDecimal!
+}
+
+enum BidStatus {
+    PLACED
+    WON
+    LOST
+    CANCELLED
+}
+
+enum AuctionStatus {
+    IN_PLANNING
+    SCHEDULED
+    IN_PROGRESS
+    ENDED
+    CANCELLED
+}

@@ -1,0 +1,11 @@
+query {
+    products(auctionId: "1", categoryIds: ["1", "2"]) {
+        id
+        name
+        description
+        category {
+            id
+            name
+        }
+    }
+}
